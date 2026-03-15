@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "start": "cd backend && node src/index.js",
     "test": "node test-automation.js",
     "test:e2e": "node e2e-test.js",
     "test:health": "node scripts/health-check.js"
