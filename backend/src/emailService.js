@@ -154,7 +154,8 @@ export async function sendSubmissionGradedEmail(studentEmail, studentName, assig
 
   const gradeColor = grade === '優秀' ? '#22c55e' : grade === '合格' ? '#3b82f6' : '#f59e0b';
 
-  await transporter.sendMail({
+  try {
+    await transporter.sendMail({
     from: process.env.SMTP_EMAIL,
     to: studentEmail,
     subject: `【伴飛計畫】作業已批改：${assignmentTitle}`,
@@ -238,7 +239,8 @@ export async function sendCourseEnrolledEmail(studentEmail, studentName, courseT
   const courseLink = process.env.FRONTEND_URL
     ? `${process.env.FRONTEND_URL}/course/${courseId}`
     : null;
-  await transporter.sendMail({
+  try {
+    await transporter.sendMail({
     from: process.env.SMTP_EMAIL,
     to: studentEmail,
     subject: `【伴飛計畫】您已加入課程：${courseTitle}`,
