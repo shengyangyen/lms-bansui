@@ -167,6 +167,26 @@ app.get('/api/drive-status', (req, res) => {
   });
 });
 
+// 測試 Drive 上傳（除錯用）
+app.get('/api/drive-test-upload', async (req, res) => {
+  if (!isDriveEnabled()) {
+    return res.status(400).json({ ok: false, error: 'Drive 未啟用' });
+  }
+  try {
+    const testContent = Buffer.from('LMS Drive 測試 ' + new Date().toISOString());
+    const fileId = await uploadToDrive(testContent, 'lms-test-upload.txt', 'text/plain');
+    if (fileId) {
+      res.json({ ok: true, fileId, message: '上傳成功，請到 Drive 資料夾檢查是否有 lms-test-upload.txt' });
+    } else {
+      res.status(500).json({ ok: false, error: '上傳回傳 null，請查看 Render Logs' });
+    }
+  } catch (e) {
+    const errDetail = e.response?.data || e.message;
+    console.error('[drive-test] 錯誤:', errDetail);
+    res.status(500).json({ ok: false, error: String(errDetail) });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, ts: Date.now() });
 });

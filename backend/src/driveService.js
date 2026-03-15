@@ -56,7 +56,8 @@ export async function uploadToDrive(buffer, filename, mimeType = 'application/oc
     });
     return data.id || null;
   } catch (e) {
-    console.error('[driveService] 上傳失敗:', e.message, e.response?.data || '');
+    const errDetail = e.response?.data || e.message;
+    console.error('[driveService] 上傳失敗:', JSON.stringify(errDetail));
     return null;
   }
 }
