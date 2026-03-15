@@ -1467,4 +1467,4 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`✓ 後端運行於 http://localhost:${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`✓ 後端運行於 port ${PORT}`));
