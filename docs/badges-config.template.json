@@ -1,0 +1,38 @@
+{
+  "_說明": "填好後存成 badges-config.json，圖檔放 frontend/public/badges/，檔名與 image 一致。填完交給我製作。",
+  "_欄位說明": {
+    "id": "唯一識別碼，英文+連字號，例：first-flight",
+    "name": "徽章顯示名稱",
+    "image": "圖檔檔名，64x64 PNG，例：first-flight.png",
+    "trigger": "auto=自動觸發 | admin=管理員手動頒發",
+    "trigger_type": "自動觸發時填，admin 時填 null。見下方 _trigger_type_可選值",
+    "description": "學員看到的說明文字",
+    "exp_amount": "獲得時增加的經驗值，1~3"
+  },
+  "_trigger_type_可選值": [
+    "first_comment：第一次留言",
+    "first_assignment：第一次完成作業",
+    "first_excellent：第一次優秀作業",
+    "exp_100：經驗值達 100",
+    "exp_1000：經驗值達 1000",
+    "comments_10：累計留言 10 則",
+    "excellent_5：累計 5 次優秀",
+    "excellent_10：累計 10 次優秀",
+    "courses_3：完成 3 門課程",
+    "revision_3：累計 3 次作業修正繳交",
+    "assignment_feedback_3：單一作業 3 則批註",
+    "is_featured：作品被選為優良展示",
+    "（其他自訂代碼可討論）"
+  ],
+  "badges": [
+    {
+      "id": "範例-id",
+      "name": "範例徽章名稱",
+      "image": "example.png",
+      "trigger": "auto",
+      "trigger_type": "first_comment",
+      "description": "學員看到的說明",
+      "exp_amount": 1
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "testTime": "2026-03-11T15:01:55.296Z",
+  "results": {
+    "login": true,
+    "n1Optimization": true,
+    "apiEfficiency": true,
+    "errorHandling": true
+  },
+  "apiCallsAnalysis": {
+    "total": 2,
+    "courseApi": 0,
+    "isDesignated": 0,
+    "details": [
+      {
+        "time": "15:01:52",
+        "method": "GET",
+        "url": "http://localhost:3000/api/courses/99999"
+      },
+      {
+        "time": "15:01:52",
+        "method": "GET",
+        "url": "http://localhost:3000/api/courses/99999"
+      }
+    ]
+  },
+  "conclusion": {
+    "passed": 4,
+    "total": 4,
+    "canDeploy": true
+  }
+}

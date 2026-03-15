@@ -1,0 +1,139 @@
+{
+  "badges": [
+    {
+      "id": "enrollment",
+      "name": "入學勳章",
+      "image": "入學勳章.png",
+      "trigger": "auto",
+      "trigger_type": "admin_approve_student",
+      "description": "歡迎來到伴飛計畫，帶著這個勳章，追尋廣闊的天空吧！",
+      "exp_amount": 3
+    },
+    {
+      "id": "stage1",
+      "name": "一階結業勳章",
+      "image": "一階結業勳章.png",
+      "trigger": "admin",
+      "trigger_type": null,
+      "description": "恭喜完成了「規畫個人軌道」的階段訓練，你找到屬於你的課程靈魂了嗎？",
+      "exp_amount": 10
+    },
+    {
+      "id": "stage2",
+      "name": "二階結業勳章",
+      "image": "二階結業勳章.png",
+      "trigger": "admin",
+      "trigger_type": null,
+      "description": "恭喜完成了「享受自在節奏」的階段訓練，期待你在課程中精采的輸出。",
+      "exp_amount": 15
+    },
+    {
+      "id": "stage3",
+      "name": "三階結業勳章",
+      "image": "三階結業勳章.png",
+      "trigger": "admin",
+      "trigger_type": null,
+      "description": "恭喜完成了「淬鍊持續進階」的階段訓練，你還在等什麼？快開課吧！",
+      "exp_amount": 20
+    },
+    {
+      "id": "rank5",
+      "name": "五等勳章",
+      "image": "五等勳章.png",
+      "trigger": "auto",
+      "trigger_type": "level_5",
+      "description": "恭喜達到等級5，是否如自己期待般成長著呢？",
+      "exp_amount": 7
+    },
+    {
+      "id": "six-arts",
+      "name": "六藝勳章",
+      "image": "六藝勳章.png",
+      "trigger": "auto",
+      "trigger_type": "badges_6",
+      "description": "真了不起，有六個勳章了，這個就送你當紀念吧。",
+      "exp_amount": 3
+    },
+    {
+      "id": "perfect",
+      "name": "完美勳章",
+      "image": "完美勳章.png",
+      "trigger": "admin",
+      "trigger_type": null,
+      "description": "真是了不起的演練，不但完成，還很完美。",
+      "exp_amount": 25
+    },
+    {
+      "id": "collaboration",
+      "name": "協作勳章",
+      "image": "協作勳章.png",
+      "trigger": "auto",
+      "trigger_type": "comments_8",
+      "description": "同儕的學習是決定品質很重要的一環，謝謝你的付出。",
+      "exp_amount": 35
+    },
+    {
+      "id": "excellent5",
+      "name": "特等勳章",
+      "image": "特等勳章.png",
+      "trigger": "auto",
+      "trigger_type": "excellent_5",
+      "description": "能夠完成這麼多次優良，相信你一定會成為講究品質的老師。",
+      "exp_amount": 20
+    },
+    {
+      "id": "coach",
+      "name": "教練勳章",
+      "image": "教練勳章.png",
+      "trigger": "admin",
+      "trigger_type": null,
+      "description": "教練覺得你很棒，繼續前進吧！",
+      "exp_amount": 10
+    },
+    {
+      "id": "stage",
+      "name": "登台勳章",
+      "image": "登台勳章.png",
+      "trigger": "admin",
+      "trigger_type": null,
+      "description": "能夠上台展現，需要很大的勇氣，恭喜你往前邁進了一大步。",
+      "exp_amount": 40
+    },
+    {
+      "id": "graduation",
+      "name": "結業勳章",
+      "image": "結業勳章.png",
+      "trigger": "admin",
+      "trigger_type": null,
+      "description": "這一段歷程是否如你的期待呢？謝謝妳和我們走了這麼長的一段路。",
+      "exp_amount": 35
+    },
+    {
+      "id": "diligent",
+      "name": "勤奮勳章",
+      "image": "勤奮勳章.png",
+      "trigger": "auto",
+      "trigger_type": "revision_3",
+      "description": "好課需要一磨再磨，這段經驗會奠定你的厚實功力",
+      "exp_amount": 30
+    },
+    {
+      "id": "glory",
+      "name": "榮耀勳章",
+      "image": "榮耀勳章.png",
+      "trigger": "auto",
+      "trigger_type": "level_12",
+      "description": "回過頭來看看當初的自己，是不是很有信心了些？你還可以更好的。",
+      "exp_amount": 12
+    },
+    {
+      "id": "excellent1",
+      "name": "優良勳章",
+      "image": "優良勳章.png",
+      "trigger": "auto",
+      "trigger_type": "first_excellent",
+      "description": "這樣的水準內容，肯定會帶給你很大的幫助。讚！",
+      "exp_amount": 20
+    }
+  ]
+}

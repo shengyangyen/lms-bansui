@@ -1,0 +1,68 @@
+{
+  "testTime": "2026-03-11T15:00:05.178Z",
+  "summary": {
+    "total": 7,
+    "passed": 3,
+    "failed": 3,
+    "warnings": 1,
+    "passRate": "42.9%"
+  },
+  "details": {
+    "part1": {
+      "passed": true,
+      "details": [
+        "✅ 教師登入成功",
+        "✅ 教師可見管理面板",
+        "✅ 教師登出成功",
+        "✅ 學生登入成功",
+        "✅ 學生視圖正確顯示"
+      ]
+    },
+    "part2": {
+      "passed": false,
+      "details": [
+        "❌ N+1 優化測試失敗: page.fill: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[name=\"title\"]')\n"
+      ],
+      "apiCalls": {}
+    },
+    "part3": {
+      "passed": false,
+      "details": [
+        "✅ 建立測試檔案: 我的作業_2026年_測試.txt",
+        "❌ 檔案上傳測試失敗: page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"作業\")')\n"
+      ]
+    },
+    "part4": {
+      "passed": false,
+      "details": [
+        "❌ 版本管理測試失敗: page.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"作業\")')\n"
+      ]
+    },
+    "part5": {
+      "passed": true,
+      "details": [
+        "⚠️ 未找到批改作業功能"
+      ]
+    },
+    "part6": {
+      "passed": true,
+      "details": [
+        "⚠️ 填空題功能：需檢查 UI 是否支援",
+        "📝 建議手動驗證填空題建立和批改流程"
+      ]
+    },
+    "part7": {
+      "passed": true,
+      "details": [
+        "✅ 顯示友善的錯誤訊息",
+        "✅ UI 在快速刷新後保持穩定",
+        "✅ 無嚴重 console 錯誤"
+      ]
+    }
+  },
+  "canDeploy": false,
+  "mainIssues": [
+    "N+1 查詢優化未完成",
+    "中文檔名處理異常"
+  ]
+}

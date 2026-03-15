@@ -1,0 +1,52 @@
+{
+  "passed": 0,
+  "failed": 7,
+  "errors": [],
+  "details": {
+    "part1": {
+      "passed": false,
+      "details": [
+        "❌ 登入驗證失敗: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n============================================================"
+      ]
+    },
+    "part2": {
+      "passed": false,
+      "details": [
+        "❌ N+1 優化測試失敗: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n============================================================"
+      ],
+      "apiCalls": []
+    },
+    "part3": {
+      "passed": false,
+      "details": [
+        "❌ 檔案上傳測試失敗: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('text=作業1').first()\n"
+      ]
+    },
+    "part4": {
+      "passed": false,
+      "details": [
+        "❌ 版本管理測試失敗: locator.setInputFiles: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[type=\"file\"]')\n"
+      ]
+    },
+    "part5": {
+      "passed": false,
+      "details": [
+        "❌ 批改流程測試失敗: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n============================================================"
+      ]
+    },
+    "part6": {
+      "passed": false,
+      "details": [
+        "❌ 填空題測試失敗: page.waitForURL: Timeout 10000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n  navigated to \"http://localhost:3000/\"\n============================================================"
+      ]
+    },
+    "part7": {
+      "passed": false,
+      "details": [
+        "⚠️ 未顯示明確的錯誤訊息",
+        "❌ UI 在快速刷新後不穩定",
+        "✅ 無嚴重 console 錯誤"
+      ]
+    }
+  }
+}

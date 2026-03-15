@@ -1,0 +1,5 @@
+-- 管理員回覆學員私訊
+ALTER TABLE contact_messages
+ADD COLUMN IF NOT EXISTS reply_content TEXT,
+ADD COLUMN IF NOT EXISTS reply_at TIMESTAMPTZ,
+ADD COLUMN IF NOT EXISTS reply_by UUID REFERENCES users(id);
