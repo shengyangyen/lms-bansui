@@ -116,22 +116,18 @@ export default function AssignmentFeedback() {
                     </div>
                   )}
 
-                  {(feedback.feedback_file_url || feedback.feedback_image_url) && (
+                  {(feedback.feedback_file_url || feedback.feedback_image_url || feedback.drive_file_id) && (
                     <div className="mb-4 p-4 bg-white rounded">
                       {feedback.feedback_image_url && (
                         <div className="mb-4">
-                          <h4 className="font-semibold text-gray-800 mb-2">
-                            📸 批改圖片：
-                          </h4>
+                          <h4 className="font-semibold text-gray-800 mb-2">📸 批改圖片：</h4>
                           <FeedbackImage feedbackId={feedback.id} />
                         </div>
                       )}
 
-                      {feedback.feedback_file_url && (
+                      {(feedback.feedback_file_url || feedback.drive_file_id) && (
                         <div>
-                          <h4 className="font-semibold text-gray-800 mb-2">
-                            📎 批改檔案：
-                          </h4>
+                          <h4 className="font-semibold text-gray-800 mb-2">📎 批改檔案：</h4>
                           <button
                             onClick={async () => {
                               try {

@@ -364,7 +364,7 @@ export default function GradingPage() {
                       {fb.comment && (
                         <p className="text-sm text-gray-700 mb-2">{fb.comment}</p>
                       )}
-                      {(fb.feedback_file_url || fb.feedback_image_url) && (
+                      {(fb.feedback_file_url || fb.feedback_image_url || fb.drive_file_id) && (
                         <button
                           onClick={async () => {
                             try {

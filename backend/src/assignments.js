@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import fs from 'fs';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
+import { isDriveEnabled, uploadToDrive, downloadFromDrive, getDriveFileMetadata } from './driveService.js';
 import { awardAssignmentExp } from './experienceService.js';
 import { onExcellentGrade, onExpChanged, onRevisionCount } from './badgeService.js';
 import { sendSubmissionGradedEmail, sendAssignmentPublishedEmail, shouldSendNotification } from './emailService.js';
@@ -395,21 +396,23 @@ router.post('/assignments/:assignmentId/submit', authenticateToken, upload.singl
       return res.status(400).json({ error: '請上傳檔案' });
     }
 
-    // 保存檔案到磁盤
-    const uploadsPath = path.join(__dirname, '../public/uploads');
-    if (!fs.existsSync(uploadsPath)) {
-      fs.mkdirSync(uploadsPath, { recursive: true });
-    }
-
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(req.file.originalname).toLowerCase();
-    const filename = uniqueSuffix + ext;
-    const filepath = path.join(uploadsPath, filename);
-    
-    // 保存原始檔名用於 Content-Disposition（改為 UTF-8 編碼）
     const originalFileName = req.file.originalname;
-    
-    fs.writeFileSync(filepath, req.file.buffer);
+    let fileUrl = null;
+    let driveFileId = null;
+
+    if (isDriveEnabled()) {
+      driveFileId = await uploadToDrive(req.file.buffer, originalFileName, req.file.mimetype || 'application/octet-stream');
+    }
+    if (!driveFileId) {
+      const uploadsPath = path.join(__dirname, '../public/uploads');
+      if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(req.file.originalname).toLowerCase();
+      const filename = uniqueSuffix + ext;
+      const filepath = path.join(uploadsPath, filename);
+      fs.writeFileSync(filepath, req.file.buffer);
+      fileUrl = `/uploads/${filename}`;
+    }
 
     // 檢查是否有最新的提交版本（只取最新一筆，避免多筆 is_latest=true 造成歧義）
     const { data: latestSubmissions, error: queryError } = await supabase
@@ -457,7 +460,8 @@ router.post('/assignments/:assignmentId/submit', authenticateToken, upload.singl
           .insert({
             assignment_id: assignmentId,
             student_id: studentId,
-            file_url: `/uploads/${filename}`,
+            file_url: fileUrl,
+            drive_file_id: driveFileId,
             file_name: originalFileName,
             version_number: nextVersion,
             is_latest: true
@@ -510,7 +514,8 @@ router.post('/assignments/:assignmentId/submit', authenticateToken, upload.singl
       .insert({
         assignment_id: assignmentId,
         student_id: studentId,
-        file_url: `/uploads/${filename}`,
+        file_url: fileUrl,
+        drive_file_id: driveFileId,
         file_name: originalFileName,
         version_number: 1,
         is_latest: true
@@ -1102,26 +1107,24 @@ router.post('/submissions/:submissionId/feedback', authenticateToken, upload.sin
 
     let feedbackFileUrl = null;
     let feedbackImageUrl = null;
+    let feedbackDriveFileId = null;
 
-    // 如果有上傳反饋檔案
     if (req.file) {
-      const uploadsPath = path.join(__dirname, '../public/uploads');
-      if (!fs.existsSync(uploadsPath)) {
-        fs.mkdirSync(uploadsPath, { recursive: true });
-      }
-
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const ext = path.extname(req.file.originalname).toLowerCase();
-      const filename = uniqueSuffix + ext;
-      const filepath = path.join(uploadsPath, filename);
+      const isImage = ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
 
-      fs.writeFileSync(filepath, req.file.buffer);
-
-      // 判斷是圖片還是檔案
-      if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
-        feedbackImageUrl = `/uploads/${filename}`;
-      } else {
-        feedbackFileUrl = `/uploads/${filename}`;
+      if (isDriveEnabled()) {
+        feedbackDriveFileId = await uploadToDrive(req.file.buffer, req.file.originalname, req.file.mimetype || 'application/octet-stream');
+      }
+      if (!feedbackDriveFileId) {
+        const uploadsPath = path.join(__dirname, '../public/uploads');
+        if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const filename = uniqueSuffix + ext;
+        const filepath = path.join(uploadsPath, filename);
+        fs.writeFileSync(filepath, req.file.buffer);
+        if (isImage) feedbackImageUrl = `/uploads/${filename}`;
+        else feedbackFileUrl = `/uploads/${filename}`;
       }
     }
 
@@ -1133,7 +1136,8 @@ router.post('/submissions/:submissionId/feedback', authenticateToken, upload.sin
         comment: comment || null,
         grade,
         feedback_file_url: feedbackFileUrl,
-        feedback_image_url: feedbackImageUrl
+        feedback_image_url: feedbackImageUrl,
+        drive_file_id: feedbackDriveFileId
       })
       .select();
 
@@ -1580,19 +1584,19 @@ router.get('/submissions/:submissionId/download', authenticateToken, async (req,
       if (!isInstructor && !isAdmin) return res.status(403).json({ error: '無權限下載' });
     }
 
+    const downloadFilename = submission.file_name || `submission-${submissionId}`;
+    const encoded = encodeURI(downloadFilename);
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded}`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+
+    if (submission.drive_file_id) {
+      const buf = await downloadFromDrive(submission.drive_file_id);
+      if (!buf) return res.status(404).json({ error: '檔案不存在或無法取得' });
+      return res.send(buf);
+    }
     const filename = submission.file_url.split('/').pop();
     const filepath = path.join(__dirname, '../public/uploads', filename);
-
-    if (!fs.existsSync(filepath)) {
-      return res.status(404).json({ error: '檔案不存在或已被刪除' });
-    }
-
-    const downloadFilename = submission.file_name || `submission-${submissionId}`;
-    // Windows 和 Chrome 相容的中文檔名編碼
-    // 用 RFC 2231 格式：filename*=charset'lang'encoded-value
-    const encoded = encodeURI(downloadFilename);  // 使用 encodeURI 而不是 encodeURIComponent
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded}`);
-    res.setHeader('Content-Type', 'application/octet-stream');  // 確保瀏覽器下載而非預覽
+    if (!fs.existsSync(filepath)) return res.status(404).json({ error: '檔案不存在或已被刪除' });
     res.sendFile(filepath);
   } catch (error) {
     console.error('下載錯誤:', error);
@@ -1607,11 +1611,11 @@ router.get('/feedback/:feedbackId/download', authenticateToken, async (req, res)
 
     const { data: feedback } = await supabase
       .from('feedback')
-      .select('feedback_file_url, feedback_image_url, submission_id')
+      .select('feedback_file_url, feedback_image_url, drive_file_id, submission_id')
       .eq('id', feedbackId)
       .single();
 
-    if (!feedback || (!feedback.feedback_file_url && !feedback.feedback_image_url)) {
+    if (!feedback || (!feedback.feedback_file_url && !feedback.feedback_image_url && !feedback.drive_file_id)) {
       return res.status(404).json({ error: '檔案不存在' });
     }
 
@@ -1625,18 +1629,22 @@ router.get('/feedback/:feedbackId/download', authenticateToken, async (req, res)
       if (!isInstructor && !isAdmin) return res.status(403).json({ error: '無權限下載' });
     }
 
+    const encoded = (name) => encodeURI(name);
+    res.setHeader('Content-Type', 'application/octet-stream');
+
+    if (feedback.drive_file_id) {
+      const meta = await getDriveFileMetadata(feedback.drive_file_id);
+      const buf = await downloadFromDrive(feedback.drive_file_id);
+      if (!buf) return res.status(404).json({ error: '檔案不存在或無法取得' });
+      const downloadName = meta?.name || `feedback-${feedbackId}`;
+      res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded(downloadName)}`);
+      return res.send(buf);
+    }
     const fileUrl = feedback.feedback_file_url || feedback.feedback_image_url;
     const filename = fileUrl.split('/').pop();
     const filepath = path.join(__dirname, '../public/uploads', filename);
-
-    if (!fs.existsSync(filepath)) {
-      return res.status(404).json({ error: '檔案不存在或已被刪除' });
-    }
-
-    // Windows 和 Chrome 相容的中文檔名編碼
-    const encoded = encodeURI(filename);
-    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded}`);
-    res.setHeader('Content-Type', 'application/octet-stream');
+    if (!fs.existsSync(filepath)) return res.status(404).json({ error: '檔案不存在或已被刪除' });
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded(filename)}`);
     res.sendFile(filepath);
   } catch (error) {
     console.error('下載錯誤:', error);

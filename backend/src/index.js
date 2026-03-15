@@ -12,6 +12,7 @@ import crypto from 'crypto';
 import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
 import assignmentRoutes, { initializeSupabase } from './assignments.js';
+import { isDriveEnabled, uploadToDrive, downloadFromDrive, getDriveFileMetadata } from './driveService.js';
 import { initializeEmailService, sendEmailVerification, sendAccountApprovalEmail, sendAccountRejectionEmail, sendAdminNotificationEmail, sendMaterialPublishedEmail, sendCourseEnrolledEmail, shouldSendNotification } from './emailService.js';
 import { initializeExperienceService, getUserLevel, adminAddUserExp, getUserActivities, createActivityNotification, createActivityNotificationBulk, getAdminUserActivities } from './experienceService.js';
 import { initializeBadgeService, getUserBadges, getAdminAwardableBadges, awardBadge, onAdminApproveStudent, onExpChanged, onCommentPosted } from './badgeService.js';
@@ -153,6 +154,19 @@ app.post('/api/auth/register', async (req, res) => {
 // 根路徑（Render 健康檢查用）
 app.get('/', (req, res) => res.redirect('/api/health'));
 // 健康檢查（用於確認 proxy 連線）
+// Drive 狀態（除錯用，確認是否啟用）
+app.get('/api/drive-status', (req, res) => {
+  const hasCreds = !!process.env.GOOGLE_DRIVE_CREDENTIALS_JSON;
+  const hasFolder = !!process.env.GOOGLE_DRIVE_FOLDER_ID;
+  const enabled = isDriveEnabled();
+  res.json({
+    driveEnabled: enabled,
+    hasCredentials: hasCreds,
+    hasFolderId: hasFolder,
+    hint: !enabled ? (hasCreds && hasFolder ? '憑證或資料夾 ID 可能有誤，請檢查 Render Logs' : '請設定 GOOGLE_DRIVE_CREDENTIALS_JSON 與 GOOGLE_DRIVE_FOLDER_ID') : 'Drive 已啟用'
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, ts: Date.now() });
 });
@@ -1207,26 +1221,41 @@ app.post('/api/courses/:courseId/materials', authenticateToken, upload.single('f
     };
 
     if (isFile) {
-      // 處理檔案上傳
-      const uploadsPath = path.join(__dirname, '../public/uploads');
-      if (!fs.existsSync(uploadsPath)) {
-        fs.mkdirSync(uploadsPath, { recursive: true });
-      }
-
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       const ext = path.extname(req.file.originalname).toLowerCase();
       const extName = ext.substring(1) || 'file';
-      const filename = uniqueSuffix + ext;
-      const filepath = path.join(uploadsPath, filename);
+      const mimeTypes = {
+        'pdf': 'application/pdf',
+        'doc': 'application/msword',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xls': 'application/vnd.ms-excel',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'ppt': 'application/vnd.ms-powerpoint',
+        'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'txt': 'text/plain',
+        'zip': 'application/zip'
+      };
+      const mimeType = mimeTypes[ext] || 'application/octet-stream';
 
-      fs.writeFileSync(filepath, req.file.buffer);
-      if (!fs.existsSync(filepath)) {
-        return res.status(500).json({ error: '檔案保存失敗' });
+      if (isDriveEnabled()) {
+        const driveFileId = await uploadToDrive(req.file.buffer, req.file.originalname, mimeType);
+        if (driveFileId) {
+          insertData.drive_file_id = driveFileId;
+          insertData.file_url = null; // Drive 模式不存本機路徑
+        }
       }
-
-      insertData.file_url = `/uploads/${filename}`;
+      if (!insertData.drive_file_id) {
+        // 本機備援或 Drive 未啟用
+        const uploadsPath = path.join(__dirname, '../public/uploads');
+        if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const filename = uniqueSuffix + ext;
+        const filepath = path.join(uploadsPath, filename);
+        fs.writeFileSync(filepath, req.file.buffer);
+        if (!fs.existsSync(filepath)) return res.status(500).json({ error: '檔案保存失敗' });
+        insertData.file_url = `/uploads/${filename}`;
+      }
       insertData.file_type = extName;
-      insertData.file_name = req.file.originalname;  // 儲存原始檔名用於下載時的 Content-Disposition
+      insertData.file_name = req.file.originalname;
     } else {
       // 處理連結
       insertData.link_url = linkUrl;
@@ -1331,11 +1360,12 @@ app.get('/api/materials/:materialId/download', authenticateToken, async (req, re
 
     const { data: material } = await supabase
       .from('course_materials')
-      .select('*')
+      .select('*, drive_file_id')
       .eq('id', materialId)
       .single();
 
     if (!material) return res.status(404).json({ error: '教材不存在' });
+    if (!material.file_url && !material.drive_file_id) return res.status(404).json({ error: '此教材為連結類型，無檔案可下載' });
 
     const { data: course } = await supabase.from('courses').select('instructor_id').eq('id', material.course_id).single();
     const isInstructor = course?.instructor_id === req.user.userId;
@@ -1350,15 +1380,6 @@ app.get('/api/materials/:materialId/download', authenticateToken, async (req, re
       if (!enrollment) return res.status(403).json({ error: '無權限下載此教材' });
     }
 
-    const filename = material.file_url.split('/').pop();
-    const filepath = path.join(__dirname, '../public/uploads', filename);
-    
-    // 驗證檔案存在
-    if (!fs.existsSync(filepath)) {
-      return res.status(404).json({ error: '檔案不存在或已被刪除' });
-    }
-    
-    // 根據副檔名判斷 MIME type
     const mimeTypes = {
       'pdf': 'application/pdf',
       'doc': 'application/msword',
@@ -1370,18 +1391,21 @@ app.get('/api/materials/:materialId/download', authenticateToken, async (req, re
       'txt': 'text/plain',
       'zip': 'application/zip'
     };
-    
-    const ext = material.file_type.toLowerCase();
+    const ext = material.file_type?.toLowerCase();
     const mimeType = mimeTypes[ext] || 'application/octet-stream';
-    
-    // 使用儲存的原始檔名，若無則生成預設名稱
-    const downloadFilename = material.file_name || `${material.title}.${ext}`;
-    
-    // 設置正確的 Content-Type 和 Content-Disposition
-    // Windows 和 Chrome 相容的中文檔名編碼
-    res.setHeader('Content-Type', mimeType);
+    const downloadFilename = material.file_name || `${material.title}.${ext || 'file'}`;
     const encoded = encodeURI(downloadFilename);
     res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded}`);
+    res.setHeader('Content-Type', mimeType);
+
+    if (material.drive_file_id) {
+      const buf = await downloadFromDrive(material.drive_file_id);
+      if (!buf) return res.status(404).json({ error: '檔案不存在或無法取得' });
+      return res.send(buf);
+    }
+    const filename = material.file_url.split('/').pop();
+    const filepath = path.join(__dirname, '../public/uploads', filename);
+    if (!fs.existsSync(filepath)) return res.status(404).json({ error: '檔案不存在或已被刪除' });
     res.sendFile(filepath);
   } catch (error) {
     console.error('下載錯誤:', error);
