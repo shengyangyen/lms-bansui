@@ -216,6 +216,11 @@ export default function CourseDetail() {
                             onClick={async () => {
                               try {
                                 const response = await fetchWithAuth(`/api/materials/${material.id}/download`);
+                                if (!response.ok) {
+                                  const err = await response.json().catch(() => ({}));
+                                  alert(err.error || '檔案不存在，請重新上傳教材');
+                                  return;
+                                }
                                 const blob = await response.blob();
                                 const url = URL.createObjectURL(blob);
                                 const link = document.createElement('a');

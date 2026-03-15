@@ -459,6 +459,11 @@ export default function ManageMaterials() {
                         onClick={async () => {
                           try {
                             const res = await fetchWithAuth(`/api/materials/${material.id}/download`);
+                            if (!res.ok) {
+                              const err = await res.json().catch(() => ({}));
+                              alert(err.error || '檔案不存在，請重新上傳教材');
+                              return;
+                            }
                             const blob = await res.blob();
                             const url = URL.createObjectURL(blob);
                             const link = document.createElement('a');
