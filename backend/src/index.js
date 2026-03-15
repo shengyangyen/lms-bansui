@@ -150,6 +150,8 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// 根路徑（Render 健康檢查用）
+app.get('/', (req, res) => res.redirect('/api/health'));
 // 健康檢查（用於確認 proxy 連線）
 app.get('/api/health', (req, res) => {
   res.json({ ok: true, ts: Date.now() });
