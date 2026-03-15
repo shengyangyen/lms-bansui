@@ -40,34 +40,42 @@
 
 ---
 
-## 步驟 4：在 Google Drive 建立資料夾並共用
+## 步驟 4：建立「共用雲端硬碟」（重要）
+
+**注意**：Service Account 沒有儲存配額，不能用一般資料夾。必須用 **共用雲端硬碟**。
 
 1. 打開 [https://drive.google.com](https://drive.google.com)
-2. 點左側 **新增** → **資料夾**
-3. 資料夾名稱：`LMS 教材與作業`（或任意名稱）
-4. 建立後，**右鍵點該資料夾** → **共用**
-5. 在「新增使用者和群組」欄位，貼上步驟 3 下載的 JSON 檔裡面的 `client_email`
-   - 用記事本打開 JSON，找到類似 `"client_email": "lms-drive@xxxxx.iam.gserviceaccount.com"` 的那串
-   - 複製整串 email（含 @ 後面）
-6. 權限選 **編輯者**
-7. 取消勾選「通知使用者」（因為是機器帳號）
-8. 點 **共用**
+2. 左側點 **共用雲端硬碟**（Shared drives）
+3. 點 **新增** 或 **建立共用雲端硬碟**
+4. 名稱：`LMS 教材與作業`（或任意名稱）
+5. 點 **建立**
 
 ---
 
-## 步驟 5：取得資料夾 ID
+## 步驟 5：將 Service Account 加入共用雲端硬碟
 
-1. 在 Google Drive 點進剛建立的資料夾
-2. 看瀏覽器網址列，格式類似：
+1. 在剛建立的共用雲端硬碟上 **右鍵** → **管理成員**
+2. 點 **新增成員**
+3. 貼上步驟 3 下載的 JSON 裡的 `client_email`（例如 `lms-drive@lms-bansui.iam.gserviceaccount.com`）
+4. 角色選 **內容管理員** 或 **管理員**
+5. 取消勾選「通知使用者」
+6. 點 **傳送**
+
+---
+
+## 步驟 6：取得共用雲端硬碟 ID
+
+1. 點進該共用雲端硬碟
+2. 看網址列，格式類似：
    ```
-   https://drive.google.com/drive/folders/1a2B3c4D5e6F7g8H9i0J
+   https://drive.google.com/drive/folders/0ABxxxxxxxxxxxxxxxx
    ```
-3. **`1a2B3c4D5e6F7g8H9i0J`** 這一段就是 **Folder ID**
+3. **`0ABxxxxxxxxxxxxxxxx`** 這一段就是 **GOOGLE_DRIVE_FOLDER_ID**（共用雲端硬碟的根目錄 ID）
 4. 複製起來，等一下會用到
 
 ---
 
-## 步驟 6：把 JSON 壓成單行
+## 步驟 7：把 JSON 壓成單行
 
 1. 用記事本或 VS Code 打開步驟 3 下載的 JSON 檔
 2. 內容有多行、有換行，需要壓成**一行**
@@ -92,14 +100,14 @@
    | Key | Value |
    |-----|-------|
    | `GOOGLE_DRIVE_CREDENTIALS_JSON` | 步驟 6 的單行 JSON（整段貼上） |
-   | `GOOGLE_DRIVE_FOLDER_ID` | 步驟 5 的資料夾 ID |
+   | `GOOGLE_DRIVE_FOLDER_ID` | 步驟 6 的共用雲端硬碟 ID |
 
 6. 點 **Save Changes**
 7. Render 會自動重新部署，等 2～3 分鐘
 
 ---
 
-## 步驟 8：在 Supabase 執行資料庫 migration
+## 步驟 9：在 Supabase 執行資料庫 migration
 
 1. 前往 [https://supabase.com](https://supabase.com) → 登入 → 選你的專案
 2. 左側點 **SQL Editor**
@@ -118,26 +126,29 @@ ALTER TABLE feedback ADD COLUMN IF NOT EXISTS drive_file_id VARCHAR(100);
 
 ---
 
-## 步驟 9：驗證
+## 步驟 10：驗證
 
 1. 等 Render 部署完成（狀態顯示 Live）
 2. 打開你的 LMS 網站
 3. 登入後，進入任一課程
 4. 上傳一筆**新教材**（PDF 或任意檔案）
-5. 到 Google Drive 開啟步驟 4 的資料夾
+5. 到 Google Drive 開啟步驟 4 的共用雲端硬碟
 6. 應該會看到剛上傳的檔案
 
-若看到檔案，代表整合成功。之後新上傳的教材、作業、批改附件都會存到這個資料夾。
+若看到檔案，代表整合成功。之後新上傳的教材、作業、批改附件都會存到這個共用雲端硬碟。
 
 ---
 
 ## 常見問題
 
+**Q：出現「Service Accounts do not have storage quota」？**  
+A：必須用**共用雲端硬碟**，不能用一般資料夾。請依步驟 4～6 重新設定。
+
 **Q：Render 部署失敗？**  
 A：檢查 `GOOGLE_DRIVE_CREDENTIALS_JSON` 是否為**單行**、沒有多餘引號或換行。
 
 **Q：上傳後 Drive 沒看到檔案？**  
-A：確認資料夾有共用給 Service Account 的 `client_email`，且權限為「編輯者」。
+A：確認共用雲端硬碟有加入 Service Account 的 `client_email`，角色為「內容管理員」或「管理員」。
 
 **Q：舊的教材下載失敗？**  
 A：舊資料仍存在本機，Render 重啟後會消失。需重新上傳教材才會存到 Drive。

@@ -13,7 +13,7 @@ import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
 import assignmentRoutes, { initializeSupabase } from './assignments.js';
 import { isDriveEnabled, uploadToDrive, downloadFromDrive, getDriveFileMetadata, getLastDriveError } from './driveService.js';
-import { initializeEmailService, sendEmailVerification, sendAccountApprovalEmail, sendAccountRejectionEmail, sendAdminNotificationEmail, sendMaterialPublishedEmail, sendCourseEnrolledEmail, shouldSendNotification } from './emailService.js';
+import { initializeEmailService, isEmailEnabled, sendEmailVerification, sendAccountApprovalEmail, sendAccountRejectionEmail, sendAdminNotificationEmail, sendMaterialPublishedEmail, sendCourseEnrolledEmail, shouldSendNotification } from './emailService.js';
 import { initializeExperienceService, getUserLevel, adminAddUserExp, getUserActivities, createActivityNotification, createActivityNotificationBulk, getAdminUserActivities } from './experienceService.js';
 import { initializeBadgeService, getUserBadges, getAdminAwardableBadges, awardBadge, onAdminApproveStudent, onExpChanged, onCommentPosted } from './badgeService.js';
 import { initializeLeaderboardService, getLeaderboardData, getLeaderboardVisibility, setLeaderboardVisible } from './leaderboardService.js';
@@ -154,6 +154,17 @@ app.post('/api/auth/register', async (req, res) => {
 // 根路徑（Render 健康檢查用）
 app.get('/', (req, res) => res.redirect('/api/health'));
 // 健康檢查（用於確認 proxy 連線）
+// 通知信狀態（除錯用）
+app.get('/api/email-status', (req, res) => {
+  res.json({
+    emailEnabled: isEmailEnabled(),
+    hasSmtpHost: !!process.env.SMTP_HOST,
+    hasSmtpEmail: !!process.env.SMTP_EMAIL,
+    hasSmtpPassword: !!process.env.SMTP_PASSWORD,
+    hint: isEmailEnabled() ? 'SMTP 已設定' : '請在 Render 設定 SMTP_HOST、SMTP_EMAIL、SMTP_PASSWORD'
+  });
+});
+
 // Drive 狀態（除錯用，確認是否啟用）
 app.get('/api/drive-status', (req, res) => {
   const hasCreds = !!process.env.GOOGLE_DRIVE_CREDENTIALS_JSON;

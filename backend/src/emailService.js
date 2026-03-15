@@ -16,15 +16,25 @@ export async function shouldSendNotification(supabase, userId, type) {
 }
 
 export function initializeEmailService() {
+  const hasSmtp = process.env.SMTP_HOST && process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD;
+  if (!hasSmtp) {
+    console.warn('[email] SMTP 未設定（SMTP_HOST/EMAIL/PASSWORD），通知信將不會寄出');
+    return;
+  }
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT),
-    secure: false, // 587 uses STARTTLS
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: false,
     auth: {
       user: process.env.SMTP_EMAIL,
       pass: process.env.SMTP_PASSWORD
     }
   });
+  console.log('[email] SMTP 已啟用，通知信將寄至學員信箱');
+}
+
+export function isEmailEnabled() {
+  return !!transporter;
 }
 
 export async function sendEmailVerification(email, token) {

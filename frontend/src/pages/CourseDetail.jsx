@@ -211,7 +211,7 @@ export default function CourseDetail() {
                       )}
                       
                       <div className="flex gap-3 flex-wrap mt-4">
-                        {material.file_url && (
+                        {(material.file_url || material.drive_file_id) && (
                           <button
                             onClick={async () => {
                               try {

@@ -454,7 +454,7 @@ export default function ManageMaterials() {
                   )}
 
                   <div className="flex gap-3 flex-wrap">
-                    {material.file_url && (
+                    {(material.file_url || material.drive_file_id) && (
                       <button
                         onClick={async () => {
                           try {
