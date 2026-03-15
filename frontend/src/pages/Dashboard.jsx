@@ -21,8 +21,6 @@ export default function Dashboard() {
   const [activities, setActivities] = useState([]);
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
   const [passwordSaving, setPasswordSaving] = useState(false);
-  const [notifPrefs, setNotifPrefs] = useState({ graded: true, material: true, assignment: true, enrolled: true });
-  const [notifPrefsSaving, setNotifPrefsSaving] = useState(false);
   const [messageContent, setMessageContent] = useState('');
   const [messageSending, setMessageSending] = useState(false);
   const [myMessages, setMyMessages] = useState([]);
@@ -49,34 +47,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (activeTab === 'messages') fetchMyMessages();
-    if (activeTab === 'profile') fetchNotifPrefs();
   }, [activeTab]);
-
-  const fetchNotifPrefs = async () => {
-    try {
-      const { data } = await api.get('/users/me/notification-preferences');
-      setNotifPrefs(data || { graded: true, material: true, assignment: true, enrolled: true });
-    } catch {
-      setNotifPrefs({ graded: true, material: true, assignment: true, enrolled: true });
-    }
-  };
-
-  const handleNotifPrefChange = (key, checked) => {
-    setNotifPrefs((prev) => ({ ...prev, [key]: checked }));
-  };
-
-  const handleSaveNotifPrefs = async (e) => {
-    e.preventDefault();
-    setNotifPrefsSaving(true);
-    try {
-      await api.patch('/users/me/notification-preferences', notifPrefs);
-      alert('通知偏好已儲存');
-    } catch (err) {
-      alert(err.response?.data?.error || '更新失敗');
-    } finally {
-      setNotifPrefsSaving(false);
-    }
-  };
 
   const fetchBadges = async () => {
     try {
@@ -353,41 +324,6 @@ export default function Dashboard() {
         {/* 3. 個人資訊管理 */}
         {activeTab === 'profile' && (
           <div className="max-w-2xl space-y-8">
-            {/* 通知偏好 */}
-            <form onSubmit={handleSaveNotifPrefs}>
-              <h2 className="font-heading text-2xl font-bold text-gray-800 mb-2">Email 通知偏好</h2>
-              <p className="text-sm text-gray-500 mb-4">勾選表示要收到該類別的信件，不勾選則不寄送。變更後請按「儲存」</p>
-              <div className="card space-y-3 mb-4">
-                {[
-                  { key: 'graded', label: '作業批改完成', desc: '老師批改你的作業後寄信通知' },
-                  { key: 'material', label: '教材上線', desc: '課程有新教材開放時通知' },
-                  { key: 'assignment', label: '作業上線', desc: '課程有新作業時通知' },
-                  { key: 'enrolled', label: '加入課程', desc: '被加入新課程時通知' }
-                ].map(({ key, label, desc }) => (
-                  <label key={key} className="flex items-start gap-3 cursor-pointer group">
-                    <input
-                      type="checkbox"
-                      checked={!!notifPrefs[key]}
-                      onChange={(e) => handleNotifPrefChange(key, e.target.checked)}
-                      disabled={notifPrefsSaving}
-                      className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                    <div>
-                      <span className="font-semibold text-gray-800">{label}</span>
-                      <p className="text-sm text-gray-500">{desc}</p>
-                    </div>
-                  </label>
-                ))}
-              </div>
-              <button
-                type="submit"
-                disabled={notifPrefsSaving}
-                className="btn-primary px-6 py-2 disabled:opacity-50"
-              >
-                {notifPrefsSaving ? '儲存中...' : '儲存通知偏好'}
-              </button>
-            </form>
-
             <h2 className="font-heading text-2xl font-bold text-gray-800 mb-6">修改密碼</h2>
             <form onSubmit={handleChangePassword} className="card space-y-4">
               <div>
