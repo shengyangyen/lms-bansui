@@ -12,7 +12,7 @@ import crypto from 'crypto';
 import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
 import assignmentRoutes, { initializeSupabase } from './assignments.js';
-import { isDriveEnabled, uploadToDrive, downloadFromDrive, getDriveFileMetadata } from './driveService.js';
+import { isDriveEnabled, uploadToDrive, downloadFromDrive, getDriveFileMetadata, getLastDriveError } from './driveService.js';
 import { initializeEmailService, sendEmailVerification, sendAccountApprovalEmail, sendAccountRejectionEmail, sendAdminNotificationEmail, sendMaterialPublishedEmail, sendCourseEnrolledEmail, shouldSendNotification } from './emailService.js';
 import { initializeExperienceService, getUserLevel, adminAddUserExp, getUserActivities, createActivityNotification, createActivityNotificationBulk, getAdminUserActivities } from './experienceService.js';
 import { initializeBadgeService, getUserBadges, getAdminAwardableBadges, awardBadge, onAdminApproveStudent, onExpChanged, onCommentPosted } from './badgeService.js';
@@ -178,7 +178,8 @@ app.get('/api/drive-test-upload', async (req, res) => {
     if (fileId) {
       res.json({ ok: true, fileId, message: '上傳成功，請到 Drive 資料夾檢查是否有 lms-test-upload.txt' });
     } else {
-      res.status(500).json({ ok: false, error: '上傳回傳 null，請查看 Render Logs' });
+      const lastErr = getLastDriveError();
+      res.status(500).json({ ok: false, error: '上傳失敗', detail: lastErr || '無錯誤紀錄（可能為 JSON 解析或憑證問題）' });
     }
   } catch (e) {
     const errDetail = e.response?.data || e.message;

@@ -6,6 +6,7 @@ import { google } from 'googleapis';
 import { Readable } from 'stream';
 
 let _drive = null;
+let _lastError = null;
 
 function getDrive() {
   if (_drive) return _drive;
@@ -28,6 +29,10 @@ function getDrive() {
 
 export function isDriveEnabled() {
   return !!getDrive();
+}
+
+export function getLastDriveError() {
+  return _lastError;
 }
 
 /**
@@ -56,8 +61,8 @@ export async function uploadToDrive(buffer, filename, mimeType = 'application/oc
     });
     return data.id || null;
   } catch (e) {
-    const errDetail = e.response?.data || e.message;
-    console.error('[driveService] 上傳失敗:', JSON.stringify(errDetail));
+    _lastError = e.response?.data || { message: e.message };
+    console.error('[driveService] 上傳失敗:', JSON.stringify(_lastError));
     return null;
   }
 }
