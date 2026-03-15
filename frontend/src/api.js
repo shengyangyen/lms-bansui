@@ -5,7 +5,7 @@ const API_BASE = '/api';
 
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 15000
+  timeout: 90000 // 90 秒，配合 Render Free 冷啟動（約 50 秒）
 });
 
 api.interceptors.request.use((config) => {
