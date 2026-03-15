@@ -13,7 +13,7 @@ import PDFDocument from 'pdfkit';
 import ExcelJS from 'exceljs';
 import assignmentRoutes, { initializeSupabase } from './assignments.js';
 import { isDriveEnabled, uploadToDrive, downloadFromDrive, getDriveFileMetadata, getLastDriveError } from './driveService.js';
-import { initializeEmailService, isEmailEnabled, sendEmailVerification, sendAccountApprovalEmail, sendAccountRejectionEmail, sendAdminNotificationEmail, sendMaterialPublishedEmail, sendCourseEnrolledEmail, shouldSendNotification } from './emailService.js';
+import { initializeEmailService, isEmailEnabled, sendTestEmail, sendEmailVerification, sendAccountApprovalEmail, sendAccountRejectionEmail, sendAdminNotificationEmail, sendMaterialPublishedEmail, sendCourseEnrolledEmail, shouldSendNotification } from './emailService.js';
 import { initializeExperienceService, getUserLevel, adminAddUserExp, getUserActivities, createActivityNotification, createActivityNotificationBulk, getAdminUserActivities } from './experienceService.js';
 import { initializeBadgeService, getUserBadges, getAdminAwardableBadges, awardBadge, onAdminApproveStudent, onExpChanged, onCommentPosted } from './badgeService.js';
 import { initializeLeaderboardService, getLeaderboardData, getLeaderboardVisibility, setLeaderboardVisible } from './leaderboardService.js';
@@ -154,6 +154,24 @@ app.post('/api/auth/register', async (req, res) => {
 // 根路徑（Render 健康檢查用）
 app.get('/', (req, res) => res.redirect('/api/health'));
 // 健康檢查（用於確認 proxy 連線）
+// 測試寄信（除錯用，GET 帶 ?to=你的信箱 會寄一封測試信）
+app.get('/api/email-test', async (req, res) => {
+  const to = req.query.to;
+  if (!to) {
+    return res.status(400).json({ error: '請加 ?to=你的信箱@gmail.com' });
+  }
+  if (!isEmailEnabled()) {
+    return res.status(400).json({ error: 'SMTP 未設定' });
+  }
+  try {
+    await sendTestEmail(to);
+    res.json({ ok: true, message: `已寄送測試信至 ${to}，請檢查垃圾郵件` });
+  } catch (e) {
+    console.error('[email-test] 失敗:', e);
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
 // 通知信狀態（除錯用）
 app.get('/api/email-status', (req, res) => {
   res.json({

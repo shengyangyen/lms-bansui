@@ -30,11 +30,25 @@ export function initializeEmailService() {
       pass: process.env.SMTP_PASSWORD
     }
   });
-  console.log('[email] SMTP 已啟用，通知信將寄至學員信箱');
+  transporter.verify((err) => {
+    if (err) console.error('[email] SMTP 連線驗證失敗:', err.message);
+    else console.log('[email] SMTP 已啟用，通知信將寄至學員信箱');
+  });
 }
 
 export function isEmailEnabled() {
   return !!transporter;
+}
+
+/** 測試寄信（除錯用） */
+export async function sendTestEmail(to) {
+  if (!transporter) throw new Error('SMTP 未設定');
+  await transporter.sendMail({
+    from: process.env.SMTP_EMAIL,
+    to,
+    subject: '【伴飛計畫】SMTP 測試信',
+    html: '<p>若您收到此信，代表 SMTP 設定正確。</p><p>伴飛計畫 LMS</p>'
+  });
 }
 
 export async function sendEmailVerification(email, token) {
@@ -129,7 +143,10 @@ export async function sendAdminNotificationEmail(adminEmail, username, email) {
  * @param {string} submissionId - 提交 ID，用於產生查看連結
  */
 export async function sendSubmissionGradedEmail(studentEmail, studentName, assignmentTitle, grade, submissionId) {
-  if (!transporter || !studentEmail) return;
+  if (!transporter || !studentEmail) {
+    if (!transporter) console.warn('[email] 跳過批改通知：SMTP 未設定');
+    return;
+  }
 
   const feedbackLink = process.env.FRONTEND_URL
     ? `${process.env.FRONTEND_URL}/assignment-feedback/${submissionId}`
@@ -149,17 +166,25 @@ export async function sendSubmissionGradedEmail(studentEmail, studentName, assig
       <p style="font-size:12px; color:#666;">伴飛計畫 2026</p>
     `
   });
+  } catch (e) {
+    console.error('[email] 批改通知寄送失敗:', e.message);
+    throw e;
+  }
 }
 
 /**
  * 教材上線時通知學員
  */
 export async function sendMaterialPublishedEmail(studentEmail, studentName, courseTitle, materialTitle, courseId) {
-  if (!transporter || !studentEmail) return;
+  if (!transporter || !studentEmail) {
+    if (!transporter) console.warn('[email] 跳過教材通知：SMTP 未設定');
+    return;
+  }
   const courseLink = process.env.FRONTEND_URL
     ? `${process.env.FRONTEND_URL}/course/${courseId}`
     : null;
-  await transporter.sendMail({
+  try {
+    await transporter.sendMail({
     from: process.env.SMTP_EMAIL,
     to: studentEmail,
     subject: `【伴飛計畫】新教材上線：${courseTitle} - ${materialTitle}`,
@@ -170,6 +195,10 @@ export async function sendMaterialPublishedEmail(studentEmail, studentName, cour
       <p style="font-size:12px; color:#666;">伴飛計畫 2026</p>
     `
   });
+  } catch (e) {
+    console.error('[email] 教材通知寄送失敗:', e.message);
+    throw e;
+  }
 }
 
 /**
@@ -180,7 +209,8 @@ export async function sendAssignmentPublishedEmail(studentEmail, studentName, co
   const submitLink = process.env.FRONTEND_URL
     ? `${process.env.FRONTEND_URL}/assignments/${assignmentId}/submit`
     : null;
-  await transporter.sendMail({
+  try {
+    await transporter.sendMail({
     from: process.env.SMTP_EMAIL,
     to: studentEmail,
     subject: `【伴飛計畫】新作業上線：${assignmentTitle}`,
@@ -191,13 +221,20 @@ export async function sendAssignmentPublishedEmail(studentEmail, studentName, co
       <p style="font-size:12px; color:#666;">伴飛計畫 2026</p>
     `
   });
+  } catch (e) {
+    console.error('[email] 作業通知寄送失敗:', e.message);
+    throw e;
+  }
 }
 
 /**
  * 學員被加入課程時通知
  */
 export async function sendCourseEnrolledEmail(studentEmail, studentName, courseTitle, courseId) {
-  if (!transporter || !studentEmail) return;
+  if (!transporter || !studentEmail) {
+    if (!transporter) console.warn('[email] 跳過選課通知：SMTP 未設定');
+    return;
+  }
   const courseLink = process.env.FRONTEND_URL
     ? `${process.env.FRONTEND_URL}/course/${courseId}`
     : null;
@@ -212,4 +249,8 @@ export async function sendCourseEnrolledEmail(studentEmail, studentName, courseT
       <p style="font-size:12px; color:#666;">伴飛計畫 2026</p>
     `
   });
+  } catch (e) {
+    console.error('[email] 選課通知寄送失敗:', e.message);
+    throw e;
+  }
 }
