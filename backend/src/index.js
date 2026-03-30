@@ -1112,6 +1112,52 @@ app.post('/api/courses', authenticateToken, async (req, res) => {
   }
 });
 
+// 刪除課程（含教材、作業、提交等關聯；admin 或該課程負責教師）
+app.delete('/api/courses/:courseId', authenticateToken, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const { data: course, error: courseErr } = await supabase
+      .from('courses')
+      .select('id, instructor_id')
+      .eq('id', courseId)
+      .single();
+
+    if (courseErr || !course) {
+      return res.status(404).json({ error: '課程不存在' });
+    }
+    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin') {
+      return res.status(403).json({ error: '無權限' });
+    }
+
+    const { data: assigns } = await supabase.from('assignments').select('id').eq('course_id', courseId);
+    const assignmentIds = (assigns || []).map((a) => a.id);
+
+    if (assignmentIds.length > 0) {
+      const { error: shwErr } = await supabase.from('showcase_submissions').delete().in('assignment_id', assignmentIds);
+      if (shwErr) throw shwErr;
+    }
+
+    const { error: featErr } = await supabase.from('featured_notes').delete().eq('course_id', courseId);
+    if (featErr) throw featErr;
+
+    await supabase.from('experience_logs').delete().eq('source_type', 'course').eq('source_id', courseId);
+    if (assignmentIds.length > 0) {
+      await supabase.from('experience_logs').delete().eq('source_type', 'assignment').in('source_id', assignmentIds);
+    }
+
+    // 教材可能引用本作業當解鎖條件，需先解除，否則刪除 assignments 可能違反 FK
+    await supabase.from('course_materials').update({ required_assignment_id: null }).eq('course_id', courseId);
+
+    const { error: delErr } = await supabase.from('courses').delete().eq('id', courseId);
+    if (delErr) throw delErr;
+
+    res.json({ message: '課程已刪除' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 // 獲取所有用戶（供教師選擇）
 app.get('/api/users/list', authenticateToken, async (req, res) => {
   try {

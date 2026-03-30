@@ -142,6 +142,19 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeleteCourse = async (courseId, title) => {
+    if (!confirm(`確定要永久刪除課程「${title}」？\n將一併刪除教材、作業、繳交與討論，無法復原。`)) return;
+    try {
+      await api.delete(`/courses/${courseId}`);
+      if (selectedCourseForEnroll === courseId) setSelectedCourseForEnroll(null);
+      fetchCourses();
+      alert('課程已刪除');
+    } catch (error) {
+      console.error('刪除課程失敗', error);
+      alert(error.response?.data?.error || '刪除失敗，請稍後再試或至資料庫手動清理');
+    }
+  };
+
   const fetchPendingUsers = async () => {
     try {
       setPendingUsersLoading(true);
@@ -513,7 +526,11 @@ export default function AdminPanel() {
                       <button className="border-2 border-primary text-primary hover:bg-primary-light px-4 py-2 rounded text-sm font-semibold transition">
                         編輯
                       </button>
-                      <button className="border-2 border-red-300 text-red-700 hover:bg-red-50 px-4 py-2 rounded text-sm font-semibold transition">
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteCourse(course.id, course.title)}
+                        className="border-2 border-red-300 text-red-700 hover:bg-red-50 px-4 py-2 rounded text-sm font-semibold transition"
+                      >
                         刪除
                       </button>
                       <button 
