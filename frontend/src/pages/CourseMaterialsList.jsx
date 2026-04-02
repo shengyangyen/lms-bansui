@@ -9,32 +9,34 @@ export default function CourseMaterialsList() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 第一次檢查權限
   useEffect(() => {
-    console.log('[CourseMaterialsList] useEffect 执行，user:', user);
-    if (!user) {
-      console.log('[CourseMaterialsList] 用戶為 null，等待登入...');
-      return;
-    }
-    if (user?.user_role !== 'admin' && user?.user_role !== 'instructor') {
-      console.log('[CourseMaterialsList] 權限不足，user_role:', user?.user_role);
+    console.log('[CourseMaterialsList] 檢查權限，user:', user?.user_role);
+    if (user && user?.user_role !== 'admin' && user?.user_role !== 'instructor') {
+      console.log('[CourseMaterialsList] 權限不足，導回首頁');
       navigate('/');
-      return;
     }
-    console.log('[CourseMaterialsList] 權限檢查通過，開始取課程');
-    fetchCourses();
-  }, [user, navigate]);
+  }, []); // 只執行一次
 
-  const fetchCourses = async () => {
-    try {
-      const { data } = await api.get('/courses');
-      // 導師和 admin 都能看所有課程
-      setCourses(data);
-    } catch (error) {
-      console.error('取得課程失敗', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // 第二次載入課程
+  useEffect(() => {
+    if (!user) return; // user 還沒載入
+    
+    const fetchCourses = async () => {
+      try {
+        console.log('[CourseMaterialsList] 開始取課程');
+        const { data } = await api.get('/courses');
+        console.log('[CourseMaterialsList] 取得課程:', data.length, '筆');
+        setCourses(data);
+      } catch (error) {
+        console.error('[CourseMaterialsList] 取得課程失敗', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50">
