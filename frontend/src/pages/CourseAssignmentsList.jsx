@@ -10,10 +10,17 @@ export default function CourseAssignmentsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[CourseAssignmentsList] useEffect 执行，user:', user);
+    if (!user) {
+      console.log('[CourseAssignmentsList] 用戶為 null，等待登入...');
+      return;
+    }
     if (user?.user_role !== 'admin' && user?.user_role !== 'instructor') {
+      console.log('[CourseAssignmentsList] 權限不足，user_role:', user?.user_role);
       navigate('/');
       return;
     }
+    console.log('[CourseAssignmentsList] 權限檢查通過，開始取課程');
     fetchCourses();
   }, [user, navigate]);
 

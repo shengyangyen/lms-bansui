@@ -10,10 +10,17 @@ export default function CourseMaterialsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('[CourseMaterialsList] useEffect 执行，user:', user);
+    if (!user) {
+      console.log('[CourseMaterialsList] 用戶為 null，等待登入...');
+      return;
+    }
     if (user?.user_role !== 'admin' && user?.user_role !== 'instructor') {
+      console.log('[CourseMaterialsList] 權限不足，user_role:', user?.user_role);
       navigate('/');
       return;
     }
+    console.log('[CourseMaterialsList] 權限檢查通過，開始取課程');
     fetchCourses();
   }, [user, navigate]);
 
