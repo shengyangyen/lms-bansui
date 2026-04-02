@@ -1136,10 +1136,15 @@ app.delete('/api/courses/:courseId', authenticateToken, async (req, res) => {
     if (assignmentIds.length > 0) {
       const { error: shwErr } = await supabase.from('showcase_submissions').delete().in('assignment_id', assignmentIds);
       if (shwErr) throw shwErr;
-    }
 
-    const { error: featErr } = await supabase.from('featured_notes').delete().eq('course_id', courseId);
-    if (featErr) throw featErr;
+      // 勿用 featured_notes.course_id：部分環境未執行該欄位遷移；改依本作業之 submission 刪除
+      const { data: subs } = await supabase.from('submissions').select('id').in('assignment_id', assignmentIds);
+      const submissionIds = (subs || []).map((s) => s.id);
+      if (submissionIds.length > 0) {
+        const { error: featErr } = await supabase.from('featured_notes').delete().in('submission_id', submissionIds);
+        if (featErr) throw featErr;
+      }
+    }
 
     await supabase.from('experience_logs').delete().eq('source_type', 'course').eq('source_id', courseId);
     if (assignmentIds.length > 0) {

@@ -22,6 +22,7 @@ function TabBtn({ active, onClick, label }) {
 export default function AdminPanel() {
   const { user, logout } = useStore();
   const navigate = useNavigate();
+  const isAdmin = user?.user_role === 'admin';
   const [courses, setCourses] = useState([]);
   const [activeTab, setActiveTab] = useState('courses');
   const [newCourse, setNewCourse] = useState({ title: '', description: '' });
@@ -553,7 +554,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {activeTab === 'users' && (
+        {activeTab === 'users' && isAdmin && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">用戶管理</h2>
@@ -614,7 +615,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {activeTab === 'approval' && (
+        {activeTab === 'approval' && isAdmin && (
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">帳號審核</h2>
@@ -674,7 +675,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {activeTab === 'experience' && (
+        {activeTab === 'experience' && isAdmin && (
           <div>
             <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
               <h2 className="text-2xl font-bold text-gray-800">經驗值管理</h2>
@@ -761,7 +762,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {activeTab === 'leaderboard' && (
+        {activeTab === 'leaderboard' && isAdmin && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">排行榜管理</h2>
             <div className="bg-white p-6 rounded-lg shadow mb-8">
@@ -833,7 +834,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {activeTab === 'badges' && (
+        {activeTab === 'badges' && isAdmin && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">頒發徽章</h2>
             <p className="text-sm text-gray-500 mb-4">手動頒發徽章給學員，可同時增加經驗值。</p>
@@ -880,7 +881,7 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {activeTab === 'notifications' && (
+        {activeTab === 'notifications' && isAdmin && (
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6">發送動態通知</h2>
             <p className="text-sm text-gray-500 mb-4">發送通知給學員，可作為上課紀錄或群體訊息，可選擇是否同時增加經驗值。群發不含共學之友。</p>
