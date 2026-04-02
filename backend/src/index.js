@@ -1505,6 +1505,7 @@ app.get('/api/materials/:materialId/download', authenticateToken, async (req, re
       if (!buf) return res.status(404).json({ error: '檔案不存在或無法取得' });
       return res.send(buf);
     }
+    if (!material.file_url) return res.status(404).json({ error: '檔案不存在或已被刪除' });
     const filename = material.file_url.split('/').pop();
     const filepath = path.join(__dirname, '../public/uploads', filename);
     if (!fs.existsSync(filepath)) return res.status(404).json({ error: '檔案不存在或已被刪除' });
