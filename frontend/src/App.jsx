@@ -43,6 +43,7 @@ function App() {
         {/* 導師專用路由 */}
         <Route path="/teacher/assignments" element={token && isTeacher ? <CourseAssignmentsList /> : <Navigate to="/" />} />
         <Route path="/teacher/assignments/:courseId" element={token && isTeacher ? <AssignmentManagement /> : <Navigate to="/" />} />
+        <Route path="/teacher/submissions/:submissionId/feedback" element={token && isTeacher ? <GradingPage /> : <Navigate to="/" />} />
         <Route path="/teacher/materials" element={token && isTeacher ? <CourseMaterialsList /> : <Navigate to="/" />} />
         <Route path="/teacher/materials/:courseId" element={token && isTeacher ? <ManageMaterials /> : <Navigate to="/" />} />
         

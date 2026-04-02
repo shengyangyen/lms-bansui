@@ -32,10 +32,12 @@ export function TopNav({ title, subtitle, showAdminLink = false, showBackButton 
             )}
             {showAdminLink && (user?.user_role === 'admin' || user?.user_role === 'instructor') && (
               <button
-                onClick={() => navigate('/admin')}
+                onClick={() =>
+                  navigate(user?.user_role === 'admin' ? '/admin' : '/teacher/assignments')
+                }
                 className="font-heading font-semibold px-3 sm:px-4 py-2 rounded-md border border-primary text-primary hover:bg-primary-light transition text-sm"
               >
-                管理
+                {user?.user_role === 'admin' ? '管理' : '教學管理'}
               </button>
             )}
             <button

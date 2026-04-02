@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store';
 import api, { fetchWithAuth } from '../api';
+import { getManageBaseFromPath } from '../utils/manageBasePath';
 import { formatTaipeiDate, formatTaipeiDateTime } from '../utils/datetime';
 
 export default function AssignmentManagement() {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const base = getManageBaseFromPath(location.pathname);
   const { user } = useStore();
   const [course, setCourse] = useState(null);
   const [assignments, setAssignments] = useState([]);
@@ -218,7 +221,7 @@ export default function AssignmentManagement() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
             <button 
-              onClick={() => navigate('/admin/materials')}
+              onClick={() => navigate(`${base}/assignments`)}
               className="text-blue-500 hover:text-blue-700 mr-4"
             >
               ← 返回課程列表
@@ -654,7 +657,7 @@ export default function AssignmentManagement() {
                         <button
                           onClick={() =>
                             navigate(
-                              `/admin/submissions/${submission.linked_submission_id || submission.id}/feedback`
+                              `${base}/submissions/${submission.linked_submission_id || submission.id}/feedback`
                             )
                           }
                           disabled={

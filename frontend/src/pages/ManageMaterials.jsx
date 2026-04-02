@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api, { fetchWithAuth } from '../api';
+import { getManageBaseFromPath } from '../utils/manageBasePath';
 import { formatTaipeiDateTime } from '../utils/datetime';
 
 // 提取 YouTube Video ID
@@ -13,6 +14,8 @@ const getYouTubeVideoId = (url) => {
 export default function ManageMaterials() {
   const { courseId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const base = getManageBaseFromPath(location.pathname);
   const [course, setCourse] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [materialType, setMaterialType] = useState('file'); // 'file' or 'link'
@@ -187,13 +190,13 @@ export default function ManageMaterials() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex gap-4">
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate(base === '/teacher' ? '/' : '/admin')}
               className="text-blue-600 hover:text-blue-700 font-semibold"
             >
-              ← 返回管理面板
+              ← {base === '/teacher' ? '返回首頁' : '返回管理面板'}
             </button>
             <button
-              onClick={() => navigate(`/admin/assignments/${courseId}`)}
+              onClick={() => navigate(`${base}/assignments/${courseId}`)}
               className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded font-semibold"
             >
               作業管理

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useStore } from '../store';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api';
+import { getManageBaseFromPath } from '../utils/manageBasePath';
 
 export default function CourseAssignmentsList() {
-  const { user } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
+  const base = getManageBaseFromPath(location.pathname);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,14 +28,25 @@ export default function CourseAssignmentsList() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-md p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-2">
           <button
-            onClick={() => navigate('/admin')}
+            onClick={() => navigate(base === '/teacher' ? '/' : '/admin')}
             className="text-blue-600 hover:text-blue-700 font-semibold"
           >
-            ← 返回管理面板
+            ← {base === '/teacher' ? '返回首頁' : '返回管理面板'}
           </button>
-          <h1 className="text-2xl font-bold text-purple-600">選擇課程管理作業</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            {base === '/teacher' && (
+              <button
+                type="button"
+                onClick={() => navigate('/teacher/materials')}
+                className="text-sm font-semibold text-gray-600 hover:text-primary border border-gray-300 rounded px-3 py-1"
+              >
+                教材管理
+              </button>
+            )}
+            <h1 className="text-2xl font-bold text-purple-600">選擇課程管理作業</h1>
+          </div>
         </div>
       </nav>
 
@@ -43,12 +55,16 @@ export default function CourseAssignmentsList() {
           <div className="text-center text-gray-600">載入中...</div>
         ) : courses.length === 0 ? (
           <div className="bg-white p-8 rounded-lg shadow text-center">
-            <p className="text-gray-600">還沒有任何課程，請先在管理面板建立課程</p>
+            <p className="text-gray-600">
+              {base === '/teacher'
+                ? '目前尚無課程資料，請聯絡管理者於後台建立課程。'
+                : '還沒有任何課程，請先在管理面板建立課程'}
+            </p>
             <button
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate(base === '/teacher' ? '/' : '/admin')}
               className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded font-semibold"
             >
-              返回管理面板
+              {base === '/teacher' ? '返回首頁' : '返回管理面板'}
             </button>
           </div>
         ) : (
@@ -56,7 +72,7 @@ export default function CourseAssignmentsList() {
             {courses.map((course) => (
               <div
                 key={course.id}
-                onClick={() => navigate(`/admin/assignments/${course.id}`)}
+                onClick={() => navigate(`${base}/assignments/${course.id}`)}
                 className="bg-white p-6 rounded-lg shadow hover:shadow-lg transition cursor-pointer transform hover:scale-105"
               >
                 <h3 className="text-xl font-bold text-gray-800 mb-2">{course.title}</h3>
