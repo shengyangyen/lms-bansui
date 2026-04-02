@@ -202,11 +202,12 @@ router.get('/courses/:courseId/assignments', authenticateToken, async (req, res)
       return res.status(404).json({ error: '課程不存在' });
     }
     
-    // 檢查：是教師、管理員或已 enroll 的學生
+    // 檢查：是課程教師、全體導師角色、管理員或已 enroll 的學生
     const isTeacher = course.instructor_id === req.user.userId;
     const isAdmin = req.user.role === 'admin';
+    const isTeacherRole = req.user.role === 'instructor';
     
-    if (!isTeacher && !isAdmin) {
+    if (!isTeacher && !isAdmin && !isTeacherRole) {
       const { data: enrollment } = await supabase
         .from('course_enrollments')
         .select('id')

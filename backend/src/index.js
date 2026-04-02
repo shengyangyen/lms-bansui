@@ -994,10 +994,11 @@ app.get('/api/courses/:courseId', authenticateToken, async (req, res) => {
     if (courseError) throw courseError;
     if (!course) return res.status(404).json({ error: '課程不存在' });
 
-    // 權限：教師、admin 或已 enroll 學員
+    // 權限：教師本人、全體導師角色、admin 或已 enroll 學員
     const isInstructor = course.instructor_id === currentUserId;
     const isAdmin = req.user.role === 'admin';
-    if (!isInstructor && !isAdmin) {
+    const isTeacherRole = req.user.role === 'instructor';
+    if (!isInstructor && !isAdmin && !isTeacherRole) {
       const { data: enrollment } = await supabase
         .from('course_enrollments')
         .select('id')
