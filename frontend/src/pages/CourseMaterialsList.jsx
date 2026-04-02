@@ -9,34 +9,20 @@ export default function CourseMaterialsList() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 第一次檢查權限
   useEffect(() => {
-    console.log('[CourseMaterialsList] 檢查權限，user:', user?.user_role);
-    if (user && user?.user_role !== 'admin' && user?.user_role !== 'instructor') {
-      console.log('[CourseMaterialsList] 權限不足，導回首頁');
-      navigate('/');
-    }
-  }, []); // 只執行一次
-
-  // 第二次載入課程
-  useEffect(() => {
-    if (!user) return; // user 還沒載入
-    
-    const fetchCourses = async () => {
-      try {
-        console.log('[CourseMaterialsList] 開始取課程');
-        const { data } = await api.get('/courses');
-        console.log('[CourseMaterialsList] 取得課程:', data.length, '筆');
-        setCourses(data);
-      } catch (error) {
-        console.error('[CourseMaterialsList] 取得課程失敗', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCourses();
-  }, [user]);
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const { data } = await api.get('/courses');
+      setCourses(data);
+    } catch (error) {
+      console.error('取得課程失敗', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
