@@ -20,11 +20,8 @@ export default function CourseMaterialsList() {
   const fetchCourses = async () => {
     try {
       const { data } = await api.get('/courses');
-      // 只顯示該教師建立的課程
-      const userCourses = data.filter(
-        course => course.instructor_id === user?.id || user?.user_role === 'admin'
-      );
-      setCourses(userCourses);
+      // 導師和 admin 都能看所有課程
+      setCourses(data);
     } catch (error) {
       console.error('取得課程失敗', error);
     } finally {
