@@ -106,7 +106,7 @@ router.post('/courses/:courseId/assignments', authenticateToken, async (req, res
       .eq('id', courseId)
       .single();
     
-    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin') {
+    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin' && req.user.role !== 'instructor') {
       return res.status(403).json({ error: '無權限' });
     }
     
@@ -714,7 +714,7 @@ router.get('/assignments/:assignmentId/submissions', authenticateToken, async (r
       .eq('id', assignment.course_id)
       .single();
 
-    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin') {
+    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin' && req.user.role !== 'instructor') {
       return res.status(403).json({ error: '無權限' });
     }
 
@@ -1102,7 +1102,7 @@ router.post('/submissions/:submissionId/feedback', authenticateToken, upload.sin
       .eq('id', assignment.course_id)
       .single();
 
-    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin') {
+    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin' && req.user.role !== 'instructor') {
       return res.status(403).json({ error: '無權限' });
     }
 
@@ -1260,7 +1260,7 @@ router.get('/assignments/:assignmentId/statistics', authenticateToken, async (re
       .eq('id', assignment.course_id)
       .single();
 
-    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin') {
+    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin' && req.user.role !== 'instructor') {
       return res.status(403).json({ error: '無權限' });
     }
 
@@ -1345,7 +1345,7 @@ router.get('/assignments/:assignmentId/submissions-by-status/:status', authentic
       .eq('id', assignment.course_id)
       .single();
 
-    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin') {
+    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin' && req.user.role !== 'instructor') {
       return res.status(403).json({ error: '無權限' });
     }
 
@@ -1718,7 +1718,7 @@ router.get('/assignments/:assignmentId/designations', authenticateToken, async (
       .eq('id', assignment.course_id)
       .single();
 
-    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin') {
+    if (course.instructor_id !== req.user.userId && req.user.role !== 'admin' && req.user.role !== 'instructor') {
       return res.status(403).json({ error: '無權限' });
     }
 
