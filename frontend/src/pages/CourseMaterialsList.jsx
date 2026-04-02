@@ -15,7 +15,7 @@ export default function CourseMaterialsList() {
       return;
     }
     fetchCourses();
-  }, []);
+  }, [user, navigate]);
 
   const fetchCourses = async () => {
     try {

@@ -15,11 +15,13 @@ export default function CourseAssignmentsList() {
       return;
     }
     fetchCourses();
-  }, []);
+  }, [user, navigate]);
 
   const fetchCourses = async () => {
     try {
+      console.log('[CourseAssignmentsList] 當前用戶:', user);
       const { data } = await api.get('/courses');
+      console.log('[CourseAssignmentsList] 取得課程:', data.length, '筆');
       // 導師和 admin 都能看所有課程
       setCourses(data);
     } catch (error) {
