@@ -455,24 +455,29 @@ export default function AdminPanel() {
               <TabBtn active={false} onClick={() => navigate('/admin/assignments')} label="作業管理" />
             </div>
           </div>
-          {/* 用戶相關 */}
-          <div className="p-4 rounded-lg bg-gray-50/80 border border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">用戶與帳號</p>
-            <div className="flex gap-2 flex-wrap">
-              <TabBtn active={activeTab === 'users'} onClick={() => { setActiveTab('users'); }} label="用戶管理" />
-              <TabBtn active={activeTab === 'approval'} onClick={() => { setActiveTab('approval'); fetchPendingUsers(); }} label="帳號審核" />
+          {/* 用戶相關（僅 admin） */}
+          {isAdmin && (
+            <div className="p-4 rounded-lg bg-gray-50/80 border border-gray-100">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">用戶與帳號</p>
+              <div className="flex gap-2 flex-wrap">
+                <TabBtn active={activeTab === 'users'} onClick={() => { setActiveTab('users'); }} label="用戶管理" />
+                <TabBtn active={activeTab === 'approval'} onClick={() => { setActiveTab('approval'); fetchPendingUsers(); }} label="帳號審核" />
+              </div>
             </div>
-          </div>
-          {/* 學員激勵 */}
-          <div className="p-4 rounded-lg bg-gray-50/80 border border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">學員激勵</p>
-            <div className="flex gap-2 flex-wrap">
-              <TabBtn active={activeTab === 'experience'} onClick={() => { setActiveTab('experience'); fetchUsersWithLevels(); }} label="經驗值管理" />
-              <TabBtn active={activeTab === 'badges'} onClick={() => { setActiveTab('badges'); fetchAdminBadges(); fetchUsersWithLevels(); }} label="頒發徽章" />
-              <TabBtn active={activeTab === 'leaderboard'} onClick={() => { setActiveTab('leaderboard'); fetchLeaderboard(); }} label="排行榜" />
-              <TabBtn active={activeTab === 'notifications'} onClick={() => { setActiveTab('notifications'); fetchUsersWithLevels(); }} label="動態通知" />
+          )}
+
+          {/* 學員激勵（僅 admin） */}
+          {isAdmin && (
+            <div className="p-4 rounded-lg bg-gray-50/80 border border-gray-100">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">學員激勵</p>
+              <div className="flex gap-2 flex-wrap">
+                <TabBtn active={activeTab === 'experience'} onClick={() => { setActiveTab('experience'); fetchUsersWithLevels(); }} label="經驗值管理" />
+                <TabBtn active={activeTab === 'badges'} onClick={() => { setActiveTab('badges'); fetchAdminBadges(); fetchUsersWithLevels(); }} label="頒發徽章" />
+                <TabBtn active={activeTab === 'leaderboard'} onClick={() => { setActiveTab('leaderboard'); fetchLeaderboard(); }} label="排行榜" />
+                <TabBtn active={activeTab === 'notifications'} onClick={() => { setActiveTab('notifications'); fetchUsersWithLevels(); }} label="動態通知" />
+              </div>
             </div>
-          </div>
+          )}
           {/* 學員訊息 */}
           <div className="p-4 rounded-lg bg-gray-50/80 border border-gray-100">
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">學員互動</p>
