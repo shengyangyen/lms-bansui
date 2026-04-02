@@ -20,6 +20,8 @@ import Leaderboard from './pages/Leaderboard';
 
 function App() {
   const token = useStore((state) => state.token);
+  const user = useStore((state) => state.user);
+  const isAdmin = user?.user_role === 'admin';
 
   return (
     <BrowserRouter>
@@ -28,13 +30,13 @@ function App() {
         <Route path="/register" element={!token ? <Register /> : <Navigate to="/" />} />
         <Route path="/" element={token ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/course/:id" element={token ? <CourseDetail /> : <Navigate to="/login" />} />
-        <Route path="/admin" element={token ? <AdminPanel /> : <Navigate to="/login" />} />
-        <Route path="/admin/materials" element={token ? <CourseMaterialsList /> : <Navigate to="/login" />} />
-        <Route path="/admin/materials/:courseId" element={token ? <ManageMaterials /> : <Navigate to="/login" />} />
-        <Route path="/admin/assignments" element={token ? <CourseAssignmentsList /> : <Navigate to="/login" />} />
-        <Route path="/admin/assignments/:courseId" element={token ? <AssignmentManagement /> : <Navigate to="/login" />} />
+        <Route path="/admin" element={token && isAdmin ? <AdminPanel /> : <Navigate to="/" />} />
+        <Route path="/admin/materials" element={token && isAdmin ? <CourseMaterialsList /> : <Navigate to="/" />} />
+        <Route path="/admin/materials/:courseId" element={token && isAdmin ? <ManageMaterials /> : <Navigate to="/" />} />
+        <Route path="/admin/assignments" element={token && isAdmin ? <CourseAssignmentsList /> : <Navigate to="/" />} />
+        <Route path="/admin/assignments/:courseId" element={token && isAdmin ? <AssignmentManagement /> : <Navigate to="/" />} />
         <Route path="/assignments/:assignmentId/edit" element={token ? <EditAssignment /> : <Navigate to="/login" />} />
-        <Route path="/admin/submissions/:submissionId/feedback" element={token ? <GradingPage /> : <Navigate to="/login" />} />
+        <Route path="/admin/submissions/:submissionId/feedback" element={token && isAdmin ? <GradingPage /> : <Navigate to="/" />} />
         <Route path="/assignments/:assignmentId/submit" element={token ? <SubmitAssignment /> : <Navigate to="/login" />} />
         <Route path="/assignment-feedback/:submissionId" element={token ? <AssignmentFeedback /> : <Navigate to="/login" />} />
         <Route path="/assignments/:assignmentId/statistics" element={token ? <AssignmentStatistics /> : <Navigate to="/login" />} />
