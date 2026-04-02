@@ -94,15 +94,31 @@ export async function getDriveFileMetadata(fileId) {
  */
 export async function downloadFromDrive(fileId) {
   const d = getDrive();
-  if (!d) return null;
+  if (!d) {
+    console.error('[driveService] 下載失敗: Drive 未初始化');
+    return null;
+  }
   try {
+    console.log('[driveService] 開始下載檔案:', fileId);
     const res = await d.drive.files.get(
       { fileId, alt: 'media' },
       { responseType: 'arraybuffer' }
     );
-    return Buffer.from(res.data);
+    if (!res || !res.data) {
+      console.error('[driveService] 下載失敗: 無回應或空內容');
+      return null;
+    }
+    const buffer = Buffer.from(res.data);
+    console.log('[driveService] 下載成功，檔案大小:', buffer.length);
+    return buffer;
   } catch (e) {
-    console.error('[driveService] 下載失敗:', e.message);
+    console.error('[driveService] 下載失敗:', {
+      message: e.message,
+      status: e.response?.status,
+      statusText: e.response?.statusText,
+      code: e.code
+    });
+    _lastError = e.response?.data || { message: e.message };
     return null;
   }
 }

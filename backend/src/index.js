@@ -1501,8 +1501,13 @@ app.get('/api/materials/:materialId/download', authenticateToken, async (req, re
     res.setHeader('Content-Type', mimeType);
 
     if (material.drive_file_id) {
+      console.log('[download] 嘗試從 Google Drive 下載:', material.drive_file_id);
       const buf = await downloadFromDrive(material.drive_file_id);
-      if (!buf) return res.status(404).json({ error: '檔案不存在或無法取得' });
+      if (!buf) {
+        console.error('[download] Google Drive 下載失敗');
+        return res.status(404).json({ error: '無法從 Google Drive 取得檔案（可能是權限問題或檔案損壞）' });
+      }
+      console.log('[download] Drive 下載成功，檔案大小:', buf.length);
       return res.send(buf);
     }
     if (!material.file_url) return res.status(404).json({ error: '檔案不存在或已被刪除' });

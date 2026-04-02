@@ -1592,7 +1592,7 @@ router.get('/submissions/:submissionId/download', authenticateToken, async (req,
 
     if (submission.drive_file_id) {
       const buf = await downloadFromDrive(submission.drive_file_id);
-      if (!buf) return res.status(404).json({ error: '檔案不存在或無法取得' });
+      if (!buf) return res.status(404).json({ error: '無法從 Google Drive 取得檔案（可能是權限問題）' });
       return res.send(buf);
     }
     if (!submission.file_url) return res.status(404).json({ error: '檔案不存在或已被刪除' });
@@ -1637,7 +1637,7 @@ router.get('/feedback/:feedbackId/download', authenticateToken, async (req, res)
     if (feedback.drive_file_id) {
       const meta = await getDriveFileMetadata(feedback.drive_file_id);
       const buf = await downloadFromDrive(feedback.drive_file_id);
-      if (!buf) return res.status(404).json({ error: '檔案不存在或無法取得' });
+      if (!buf) return res.status(404).json({ error: '無法從 Google Drive 取得檔案（可能是權限問題）' });
       const downloadName = meta?.name || `feedback-${feedbackId}`;
       res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encoded(downloadName)}`);
       return res.send(buf);
