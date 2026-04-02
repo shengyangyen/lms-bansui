@@ -1570,7 +1570,7 @@ router.get('/submissions/:submissionId/download', authenticateToken, async (req,
 
     const { data: submission } = await supabase
       .from('submissions')
-      .select('file_url, file_name, student_id, assignment_id')
+      .select('file_url, file_name, student_id, assignment_id, drive_file_id')
       .eq('id', submissionId)
       .single();
 
@@ -1582,7 +1582,8 @@ router.get('/submissions/:submissionId/download', authenticateToken, async (req,
       const { data: course } = await supabase.from('courses').select('instructor_id').eq('id', assignment?.course_id).single();
       const isInstructor = course?.instructor_id === req.user.userId || assignment?.created_by === req.user.userId;
       const isAdmin = req.user.role === 'admin';
-      if (!isInstructor && !isAdmin) return res.status(403).json({ error: '無權限下載' });
+      const isTeacherRole = req.user.role === 'instructor';
+      if (!isInstructor && !isAdmin && !isTeacherRole) return res.status(403).json({ error: '無權限下載' });
     }
 
     const downloadFilename = submission.file_name || `submission-${submissionId}`;
